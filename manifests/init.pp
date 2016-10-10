@@ -13,7 +13,10 @@ class httpproxy (
 
   # Validates that $http_proxy is a valid, usable domain name or IP address
   if $http_proxy and size($http_proxy) > 3 {   # '.' is an RFC-valid domain name, but not usable in this context
-    if is_ip_address($http_proxy) or is_domain_name($http_proxy) {
+    if is_ipv4_address($http_proxy) or is_domain_name($http_proxy) {
+      $proxy_is_valid = true
+    } elsif is_ipv6_address($http_proxy) { # IPv6 needs to be enclosed in []
+      $http_proxy = enclose_ipv6($http_proxy)
       $proxy_is_valid = true
     } else {
       # Invalid proxy specified - could also 'undef' the value an continue??
