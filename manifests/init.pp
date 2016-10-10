@@ -11,9 +11,20 @@ class httpproxy (
   $purge_apt_conf  = false,
 ){
 
-  # Validates that $http_proxy and $http_proxy_port are domain names and ports respectively.
-  if $http_proxy { validate_re($http_proxy, '^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$') }
-  if $http_proxy_port { validate_re($http_proxy_port, '^\d+$') }
+  # Validates that $http_proxy is a valid, usable domain name or IP address
+  if $http_proxy and size($http_proxy) > 3 {   # '.' is an RFC-valid domain name, but not usable in this context
+    if is_ip_address($http_proxy) or is_domain_name($http_proxy) {
+      $proxy_is_valid = true
+    } else {
+      # Invalid proxy specified - could also 'undef' the value an continue??
+      $proxy_is_valid = 'No, the proxy is not valid'
+    }
+    validate_bool($proxy_is_valid)
+  }
+  # Validate that $http_proxy_port is a valid port number
+  if $http_proxy_port {
+    validate_integer($http_proxy_port, 65535, 0)
+  }
   validate_bool($purge_apt_conf)
 
   # Checks if $http_proxy contains a string. If $http_proxy is null $ensure is set to absent.
