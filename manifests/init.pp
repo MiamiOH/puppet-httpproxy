@@ -14,15 +14,13 @@ class httpproxy (
   # Validates that $http_proxy is a valid, usable domain name or IP address
   if $http_proxy and size($http_proxy) > 3 {   # '.' is an RFC-valid domain name, but not usable in this context
     if is_ipv4_address($http_proxy) or is_domain_name($http_proxy) {
-      $proxy_is_valid = true
+      $_http_proxy = $http_proxy
     } elsif is_ipv6_address($http_proxy) { # IPv6 needs to be enclosed in []
-      $http_proxy = enclose_ipv6($http_proxy)
-      $proxy_is_valid = true
+      $_http_proxy = enclose_ipv6($http_proxy)
     } else {
-      # Invalid proxy specified - could also 'undef' the value an continue??
-      $proxy_is_valid = 'No, the proxy is not valid'
+      # Invalid proxy format
+      fail("The http_proxy specified ( ${http_proxy} ) is not a valid IP or hostname.")
     }
-    validate_bool($proxy_is_valid)
   }
   # Validate that $http_proxy_port is a valid port number
   if $http_proxy_port {
@@ -30,9 +28,9 @@ class httpproxy (
   }
   validate_bool($purge_apt_conf)
 
-  # Checks if $http_proxy contains a string. If $http_proxy is null $ensure is set to absent.
-  # If $http_proxy contains a string then $ensure is set to present.
-  $ensure = $http_proxy ? {
+  # Checks if $_http_proxy contains a string. If $_http_proxy is null $ensure is set to absent.
+  # If $_http_proxy contains a string then $ensure is set to present.
+  $ensure = $_http_proxy ? {
     undef   => 'absent',
     default => 'present',
   }
@@ -47,9 +45,9 @@ class httpproxy (
 
   # Checks if $http_proxy contains a string. If it is null, $proxy_uri is set to null.
   # Otherwise, it will concatenate $http_proxy and $proxy_port_string.
-  $proxy_uri = $http_proxy ? {
+  $proxy_uri = $_http_proxy ? {
     undef   => undef,
-    default => "http://${http_proxy}${proxy_port_string}",
+    default => "http://${_http_proxy}${proxy_port_string}",
   }
 
   # Boolean parameter for class selection
