@@ -1,14 +1,12 @@
 # package/apt.pp (private class)
-# Uses the puppetlabs-apt module to manage apt package manager proxies
-# https://forge.puppetlabs.com/puppetlabs/apt
+# Writes a conf.d file to make Apt use the proxy
 class httpproxy::package::apt {
-
-  class { '::apt':
-    proxy => {
-      'ensure' => $httpproxy::packagemanager::ensure,
-      'host'   => $httpproxy::http_proxy,
-      'port'   => $httpproxy::http_proxy_port,
-    },
+  file { 'apt_via_proxy':
+    ensure  => $httpproxy::packagemanager::ensure,
+    path    => '/etc/apt/apt.conf.d/05proxy',
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => "Acquire::http::Proxy \"http://${httpproxy::http_proxy}:${httpproxy::http_proxy_port}\";",
   }
-  contain '::apt'
 }
