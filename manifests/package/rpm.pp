@@ -4,7 +4,6 @@
 # Any per-system configuration
 # should be added to /etc/rpm/macros
 class httpproxy::package::rpm {
-
   $lines = [
     '# File managed by Puppet',
     '',

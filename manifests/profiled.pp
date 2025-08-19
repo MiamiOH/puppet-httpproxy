@@ -3,7 +3,6 @@
 # Uses the unibet/profiled module
 # https://forge.puppetlabs.com/unibet/profiled
 class httpproxy::profiled {
-
   $ensure = $httpproxy::profiled ? {
     true    => $httpproxy::ensure,
     default => $httpproxy::profiled,

@@ -3,7 +3,6 @@
 # Uses the puppetlabs/inifile resource
 # https://forge.puppetlabs.com/puppetlabs/inifile
 class httpproxy::wget {
-
   $ensure = $httpproxy::wget ? {
     true    => $httpproxy::ensure,
     default => $httpproxy::wget,
