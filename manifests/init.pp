@@ -20,7 +20,7 @@
 # @param no_proxy
 #   Comma separated string of hosts to access without using proxy
 # @param profiled
-#   Use profiled module to configure proxy on host (default: true)
+#   Configure profiled module to configure proxy on host (default: true)
 # @param packagemanager
 #   Configure package manager to use proxy (default: true)
 # @param wget
@@ -32,10 +32,10 @@ class httpproxy (
   Optional[Stdlib::Host] $http_proxy      = undef,
   Optional[Stdlib::Port] $http_proxy_port = undef,
   Optional[String]       $no_proxy        = undef,
-  Boolean                $profiled        = true,
-  Boolean                $packagemanager  = true,
-  Boolean                $wget            = false,
-  Boolean                $purge_apt_conf  = false,
+  Scalar                 $profiled        = true,
+  Scalar                 $packagemanager  = true,
+  Scalar                 $wget            = false,
+  Scalar                 $purge_apt_conf  = false,
 ) {
   # Checks if $http_proxy contains a string. If $http_proxy is null $ensure is set to absent.
   # If $http_proxy contains a string then $ensure is set to present.
