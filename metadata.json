@@ -72,7 +72,7 @@
     "proxy",
     "linux"
   ],
-  "pdk-version": "3.4.0",
-  "template-url": "https://github.com/puppetlabs/pdk-templates#3.4.0",
-  "template-ref": "tags/3.4.0-0-gd3cc13f"
+  "pdk-version": "3.5.1 (g7d6a7d3)",
+  "template-url": "https://github.com/puppetlabs/pdk-templates#3.5.1",
+  "template-ref": "tags/3.5.1-0-g9d5b193"
 }
