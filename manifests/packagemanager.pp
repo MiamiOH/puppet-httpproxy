@@ -3,7 +3,7 @@
 class httpproxy::packagemanager {
   $ensure = $httpproxy::packagemanager ? {
     true    => $httpproxy::ensure,
-    default => $httpproxy::packagemanager,
+    false   => 'absent',
   }
 
   case $facts['os']['family'] {
@@ -11,10 +11,17 @@ class httpproxy::packagemanager {
       contain 'httpproxy::package::rpm'
       contain 'httpproxy::package::yum'
     }
+
     'Debian': {
       contain 'httpproxy::package::apt'
-      if $httpproxy::purge_apt_conf { contain 'httpproxy::package::purge_apt_conf' }
+
+      if $httpproxy::purge_apt_conf {
+        contain 'httpproxy::package::purge_apt_conf'
+      }
     }
-    default: { fail('your distro is not supported') }
+
+    default: {
+      fail('your distro is not supported')
+    }
   }
 }

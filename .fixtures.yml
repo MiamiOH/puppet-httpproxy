@@ -2,7 +2,6 @@ fixtures:
   forge_modules:
     stdlib: "puppetlabs/stdlib"
     inifile: "puppetlabs/inifile"
-    profiled: "unibet/profiled"
     apt: "puppetlabs/apt"
   symlinks:
     httpproxy: "#{source_dir}"

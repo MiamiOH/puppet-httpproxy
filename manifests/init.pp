@@ -32,35 +32,32 @@ class httpproxy (
   Optional[Stdlib::Host] $http_proxy      = undef,
   Optional[Stdlib::Port] $http_proxy_port = undef,
   Optional[String]       $no_proxy        = undef,
-  Scalar                 $profiled        = true,
-  Scalar                 $packagemanager  = true,
-  Scalar                 $wget            = false,
-  Scalar                 $purge_apt_conf  = false,
+  Boolean                $profiled        = true,
+  Boolean                $packagemanager  = true,
+  Boolean                $wget            = false,
+  Boolean                $purge_apt_conf  = false,
 ) {
-  # Checks if $http_proxy contains a string. If $http_proxy is null $ensure is set to absent.
-  # If $http_proxy contains a string then $ensure is set to present.
+  # No proxy host means all managed proxy configuration should be removed.
   $ensure = $http_proxy ? {
     undef   => 'absent',
     default => 'present',
   }
 
-  # Checks if $http_proxy_port contains a string. If $http_proxy_port is null, $proxy_port_string
-  # is set to null. Otherwise, a colon is added in front of $http_proxy_port and stored in
-  # $proxy_port_string
+  # Build the optional port portion of the proxy URI.
   $proxy_port_string = $http_proxy_port ? {
     undef   => undef,
     default => ":${http_proxy_port}",
   }
 
-  # Checks if $http_proxy contains a string. If it is null, $proxy_uri is set to null.
-  # Otherwise, it will concatenate $http_proxy and $proxy_port_string.
+  # Build the complete proxy URI.
   $proxy_uri = $http_proxy ? {
     undef   => undef,
     default => "http://${http_proxy}${proxy_port_string}",
   }
 
-  # Boolean parameter for class selection
-  if $profiled { contain 'httpproxy::profiled' }
-  if $packagemanager { contain 'httpproxy::packagemanager' }
-  if $wget { contain 'httpproxy::wget' }
+  # Always declare these classes so that changing a feature from
+  # true -> false removes configuration previously managed by Puppet.
+  contain 'httpproxy::profiled'
+  contain 'httpproxy::packagemanager'
+  contain 'httpproxy::wget'
 }

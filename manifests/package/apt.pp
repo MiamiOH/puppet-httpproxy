@@ -8,7 +8,7 @@ class httpproxy::package::apt {
   if !defined(Apt::Setting['conf-proxy']) {
     $content = @("EOL"/L)
     // This file is managed by Puppet. DO NOT EDIT.
-    Acquire::http::proxy "http://$httpproxy::http_proxy:$httpproxy::http_proxy_port/";
+    Acquire::http::proxy "${httpproxy::proxy_uri}";
     | EOL
 # lint:endignore
 

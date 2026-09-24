@@ -1,76 +1,316 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'httpproxy' do
   on_supported_os.each do |os, facts|
     context "on #{os}" do
-      let(:facts) do
-        facts.merge(environment: 'test', concat_basedir: '/var/lib/puppet/concat')
+      let(:facts) { facts }
+
+      context 'with default parameters' do
+        it { is_expected.to compile }
+
+        it {
+          is_expected.to contain_class('httpproxy::profiled')
+        }
+
+        it {
+          is_expected.to contain_class('httpproxy::packagemanager')
+        }
+
+        it {
+          is_expected.to contain_class('httpproxy::wget')
+        }
+
+        it {
+          is_expected.to contain_file('/etc/profile.d/httpproxy.sh')
+            .with_ensure('absent')
+        }
+
+        it {
+          is_expected.to contain_ini_setting('wget-http_proxy')
+            .with_ensure('absent')
+        }
+
+        it {
+          is_expected.to contain_ini_setting('wget-https_proxy')
+            .with_ensure('absent')
+        }
       end
 
-      context 'with defaults' do
-        it { is_expected.to compile.with_all_deps }
-        it { is_expected.to contain_class('httpproxy::profiled') }
-        it { is_expected.to contain_class('httpproxy::packagemanager') }
-        if facts[:osfamily] == 'Debian'
-          it { is_expected.to contain_class('httpproxy::package::apt') }
-        elsif facts[:osfamily] == 'RedHat'
-          it { is_expected.to contain_class('httpproxy::package::yum') }
-          it { is_expected.to contain_class('httpproxy::package::rpm') }
-        end
-        it { is_expected.not_to contain_class('httpproxy::package::purge_apt_conf') }
-        it { is_expected.not_to contain_class('httpproxy::wget') }
-      end
-
-      context 'with all activated' do
+      context 'with a proxy configured' do
         let(:params) do
           {
-            http_proxy:      'proxy.test.com',
-            http_proxy_port: 80,
-            profiled:        true,
-            packagemanager:  true,
-            wget:            true,
-            purge_apt_conf:  true,
+            http_proxy:      'proxy.example.com',
+            http_proxy_port: 8080,
           }
         end
 
-        it { is_expected.to compile.with_all_deps }
-        it { is_expected.to contain_class('httpproxy::profiled') }
-        it { is_expected.to contain_class('httpproxy::packagemanager') }
-        if facts[:osfamily] == 'Debian'
-          it { is_expected.to contain_class('httpproxy::package::apt') }
-          it { is_expected.to contain_class('httpproxy::package::purge_apt_conf') }
-        elsif facts[:osfamily] == 'RedHat'
-          it { is_expected.to contain_class('httpproxy::package::yum') }
-          it { is_expected.to contain_class('httpproxy::package::rpm') }
-          it { is_expected.not_to contain_class('httpproxy::package::purge_apt_conf') }
-        end
-        it { is_expected.to contain_class('httpproxy::wget') }
+        it { is_expected.to compile }
+
+        it {
+          is_expected.to contain_file('/etc/profile.d/httpproxy.sh')
+            .with(
+              'ensure' => 'present',
+              'owner'  => 'root',
+              'group'  => 'root',
+              'mode'   => '0644',
+            )
+        }
+
+        it {
+          is_expected.to contain_file('/etc/profile.d/httpproxy.sh')
+            .with_content(
+              %r{export http_proxy=http://proxy\.example\.com:8080},
+            )
+        }
+
+        it {
+          is_expected.to contain_file('/etc/profile.d/httpproxy.sh')
+            .with_content(
+              %r{export https_proxy=http://proxy\.example\.com:8080},
+            )
+        }
+
+        it {
+          is_expected.to contain_ini_setting('wget-http_proxy')
+            .with(
+              'ensure'  => 'absent',
+              'path'    => '/etc/wgetrc',
+              'section' => '',
+              'setting' => 'http_proxy',
+            )
+        }
+
+        it {
+          is_expected.to contain_ini_setting('wget-https_proxy')
+            .with(
+              'ensure'  => 'absent',
+              'path'    => '/etc/wgetrc',
+              'section' => '',
+              'setting' => 'https_proxy',
+            )
+        }
       end
 
-      context 'with all deactivated' do
+      context 'with no_proxy configured' do
         let(:params) do
           {
-            http_proxy:      'proxy.test.com',
-            http_proxy_port: 80,
-            profiled:        false,
-            packagemanager:  false,
-            wget:            false,
-            purge_apt_conf:  false,
+            http_proxy:      'proxy.example.com',
+            http_proxy_port: 8080,
+            no_proxy:        'localhost,127.0.0.1,.example.com',
           }
         end
 
-        it { is_expected.to compile.with_all_deps }
-        it { is_expected.not_to contain_class('httpproxy::profiled') }
-        it { is_expected.not_to contain_class('httpproxy::packagemanager') }
-        if facts[:osfamily] == 'Debian'
-          it { is_expected.not_to contain_class('httpproxy::package::apt') }
-        elsif facts[:osfamily] == 'RedHat'
-          it { is_expected.not_to contain_class('httpproxy::package::yum') }
-          it { is_expected.not_to contain_class('httpproxy::package::rpm') }
+        it {
+          is_expected.to contain_file('/etc/profile.d/httpproxy.sh')
+            .with_content(
+              %r{export no_proxy=localhost,127\.0\.0\.1,\.example\.com},
+            )
+        }
+      end
+
+      context 'with only a proxy host configured' do
+        let(:params) do
+          {
+            http_proxy: 'proxy.example.com',
+          }
         end
-        it { is_expected.not_to contain_class('httpproxy::package::purge_apt_conf') }
-        it { is_expected.not_to contain_class('httpproxy::wget') }
+
+        it {
+          is_expected.to contain_file('/etc/profile.d/httpproxy.sh')
+            .with_content(
+              %r{export http_proxy=http://proxy\.example\.com\n},
+            )
+        }
+      end
+
+      context 'with profiled disabled' do
+        let(:params) do
+          {
+            http_proxy: 'proxy.example.com',
+            profiled:   false,
+          }
+        end
+
+        it {
+          is_expected.to contain_file('/etc/profile.d/httpproxy.sh')
+            .with_ensure('absent')
+        }
+      end
+
+      context 'with wget enabled' do
+        let(:params) do
+          {
+            http_proxy: 'proxy.example.com',
+            wget:       true,
+          }
+        end
+
+        it {
+          is_expected.to contain_ini_setting('wget-http_proxy')
+            .with(
+              'ensure'  => 'present',
+              'path'    => '/etc/wgetrc',
+              'section' => '',
+              'setting' => 'http_proxy',
+              'value'   => 'http://proxy.example.com',
+            )
+        }
+
+        it {
+          is_expected.to contain_ini_setting('wget-https_proxy')
+            .with(
+              'ensure'  => 'present',
+              'path'    => '/etc/wgetrc',
+              'section' => '',
+              'setting' => 'https_proxy',
+              'value'   => 'http://proxy.example.com',
+            )
+        }
+      end
+
+      context 'with wget disabled' do
+        let(:params) do
+          {
+            http_proxy: 'proxy.example.com',
+            wget:       false,
+          }
+        end
+
+        it {
+          is_expected.to contain_ini_setting('wget-http_proxy')
+            .with_ensure('absent')
+        }
+
+        it {
+          is_expected.to contain_ini_setting('wget-https_proxy')
+            .with_ensure('absent')
+        }
+      end
+
+      context 'with package manager disabled' do
+        let(:params) do
+          {
+            http_proxy:     'proxy.example.com',
+            packagemanager: false,
+          }
+        end
+
+        it { is_expected.to compile }
+
+        it {
+          if facts[:os]['family'] == 'RedHat'
+            is_expected.to contain_ini_setting('yum_proxy')
+              .with_ensure('absent')
+          end
+        }
+      end
+
+      if facts[:os]['family'] == 'RedHat'
+        context 'on RedHat' do
+          let(:params) do
+            {
+              http_proxy:      'proxy.example.com',
+              http_proxy_port: 8080,
+            }
+          end
+
+          it { is_expected.to compile }
+
+          it {
+            is_expected.to contain_ini_setting('yum_proxy')
+              .with(
+                'ensure'  => 'present',
+                'path'    => '/etc/yum.conf',
+                'section' => 'main',
+                'setting' => 'proxy',
+                'value'   => 'http://proxy.example.com:8080',
+              )
+          }
+
+          it {
+            is_expected.to contain_file('/etc/rpm/macros.httpproxy')
+              .with(
+                'ensure' => 'present',
+                'owner'  => 'root',
+                'group'  => 'root',
+                'mode'   => '0644',
+              )
+          }
+        end
+      end
+
+      if facts[:os]['family'] == 'Debian'
+        context 'on Debian' do
+          let(:params) do
+            {
+              http_proxy: 'proxy.example.com',
+            }
+          end
+
+          it { is_expected.to compile }
+
+          it {
+            is_expected.to contain_apt__setting('conf-proxy')
+              .with(
+                'ensure'   => 'present',
+                'priority' => '01',
+              )
+          }
+        end
+
+        context 'with apt.conf purge enabled' do
+          let(:params) do
+            {
+              http_proxy:      'proxy.example.com',
+              purge_apt_conf: true,
+            }
+          end
+
+          it {
+            is_expected.to contain_file('/etc/apt/apt.conf')
+              .with_ensure('absent')
+          }
+        end
+
+        context 'with apt.conf purge disabled' do
+          let(:params) do
+            {
+              http_proxy:      'proxy.example.com',
+              purge_apt_conf: false,
+            }
+          end
+
+          it {
+            is_expected.not_to contain_file('/etc/apt/apt.conf')
+          }
+        end
       end
     end
   end
+
+  context 'with an unsupported OS family' do
+    let(:facts) do
+      {
+        os: {
+          family: 'Solaris',
+          name:   'Solaris',
+        },
+      }
+    end
+
+    let(:params) do
+      {
+        http_proxy: 'proxy.example.com',
+      }
+    end
+
+    it {
+      is_expected.to compile.and_raise_error(
+        %r{your distro is not supported},
+      )
+    }
+  end
 end
+

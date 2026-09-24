@@ -1,11 +1,10 @@
 # Profiled.pp (private class)
 # Manages proxies in profile.d
-# Uses the unibet/profiled module
-# https://forge.puppetlabs.com/unibet/profiled
+
 class httpproxy::profiled {
   $ensure = $httpproxy::profiled ? {
     true    => $httpproxy::ensure,
-    default => $httpproxy::profiled,
+    false   => 'absent',
   }
 
   if $httpproxy::no_proxy {
@@ -24,10 +23,19 @@ class httpproxy::profiled {
     ]
   }
 
-  # shell paramter enables or disables the shabang at the top of the bash script.
-  profiled::script { 'httpproxy.sh':
+  file { '/etc/profile.d':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
+
+  file { '/etc/profile.d/httpproxy.sh':
     ensure  => $ensure,
-    content => join($lines, "\n"),
-    shell   => 'absent',
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => "${join($lines, "\n")}\n",
+    require => File['/etc/profile.d'],
   }
 }

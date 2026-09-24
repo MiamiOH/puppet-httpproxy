@@ -5,10 +5,9 @@
 class httpproxy::wget {
   $ensure = $httpproxy::wget ? {
     true    => $httpproxy::ensure,
-    default => $httpproxy::wget,
+    false   => 'absent',
   }
 
-  # Writes ini settings defined in init.pp in the wget configuration file.
   ini_setting { 'wget-http_proxy':
     ensure  => $ensure,
     path    => '/etc/wgetrc',
@@ -16,7 +15,7 @@ class httpproxy::wget {
     setting => 'http_proxy',
     value   => $httpproxy::proxy_uri,
   }
-  # Writes "https" setting. This module does not support https so it uses whatever is specified for http.
+
   ini_setting { 'wget-https_proxy':
     ensure  => $ensure,
     path    => '/etc/wgetrc',
