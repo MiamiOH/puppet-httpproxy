@@ -55,9 +55,8 @@ class httpproxy (
     default => "http://${http_proxy}${proxy_port_string}",
   }
 
-  # Always declare these classes so that changing a feature from
-  # true -> false removes configuration previously managed by Puppet.
-  contain 'httpproxy::profiled'
-  contain 'httpproxy::packagemanager'
-  contain 'httpproxy::wget'
+  # Boolean parameter for class selection
+  if $profiled { contain 'httpproxy::profiled' }
+  if $packagemanager { contain 'httpproxy::packagemanager' }
+  if $wget { contain 'httpproxy::wget' }
 }

@@ -5,7 +5,6 @@
 class httpproxy::wget {
   $ensure = $httpproxy::wget ? {
     true    => $httpproxy::ensure,
-    false   => 'absent',
     default => $httpproxy::wget,
   }
 
