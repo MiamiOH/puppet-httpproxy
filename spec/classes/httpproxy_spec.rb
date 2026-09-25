@@ -313,4 +313,3 @@ describe 'httpproxy' do
     }
   end
 end
-

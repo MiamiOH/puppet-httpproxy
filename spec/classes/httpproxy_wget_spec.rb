@@ -67,4 +67,3 @@ describe 'httpproxy::wget' do
     }
   end
 end
-

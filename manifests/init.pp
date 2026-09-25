@@ -32,9 +32,9 @@ class httpproxy (
   Optional[Stdlib::Host] $http_proxy      = undef,
   Optional[Stdlib::Port] $http_proxy_port = undef,
   Optional[String]       $no_proxy        = undef,
-  Boolean                $profiled        = true,
-  Boolean                $packagemanager  = true,
-  Boolean                $wget            = false,
+  Scalar                 $profiled        = true,
+  Scalar                 $packagemanager  = true,
+  Scalar                 $wget            = false,
   Boolean                $purge_apt_conf  = false,
 ) {
   # No proxy host means all managed proxy configuration should be removed.

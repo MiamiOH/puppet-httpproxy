@@ -5,6 +5,7 @@ class httpproxy::profiled {
   $ensure = $httpproxy::profiled ? {
     true    => $httpproxy::ensure,
     false   => 'absent',
+    default => $httpproxy::profiled,
   }
 
   if $httpproxy::no_proxy {

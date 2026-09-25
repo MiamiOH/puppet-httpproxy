@@ -113,4 +113,3 @@ describe 'httpproxy::profiled' do
     end
   end
 end
-

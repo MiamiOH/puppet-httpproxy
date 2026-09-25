@@ -36,8 +36,6 @@ describe 'httpproxy::package::apt' do
             "Acquire::http::proxy \"http://proxy.example.com:3128\";\n",
           )
       }
-
     end
   end
 end
-

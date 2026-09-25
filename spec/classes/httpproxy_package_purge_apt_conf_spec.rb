@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require 'spec_helper'
 
 describe 'httpproxy::package::purge_apt_conf' do
@@ -23,12 +21,13 @@ describe 'httpproxy::package::purge_apt_conf' do
       it { is_expected.to compile }
 
       it {
+        is_expected.to contain_class('httpproxy::package::purge_apt_conf')
+      }
+
+      it {
         is_expected.to contain_file('/etc/apt/apt.conf')
-          .with(
-            'ensure' => 'absent',
-          )
+          .with('ensure' => 'absent')
       }
     end
   end
 end
-

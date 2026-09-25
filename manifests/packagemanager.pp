@@ -4,6 +4,7 @@ class httpproxy::packagemanager {
   $ensure = $httpproxy::packagemanager ? {
     true    => $httpproxy::ensure,
     false   => 'absent',
+    default => $httpproxy::packagemanager,
   }
 
   case $facts['os']['family'] {
