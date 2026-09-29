@@ -23,19 +23,10 @@ class httpproxy::profiled {
     ]
   }
 
-  file { '/etc/profile.d':
-    ensure => directory,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0755',
-  }
-
-  file { '/etc/profile.d/httpproxy.sh':
+  # shell paramter enables or disables the shabang at the top of the bash script.
+  profiled::script { 'httpproxy.sh':
     ensure  => $ensure,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    content => "${join($lines, "\n")}\n",
-    require => File['/etc/profile.d'],
+    content => join($lines, "\n"),
+    shell   => 'absent',
   }
 }
